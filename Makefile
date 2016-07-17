@@ -25,6 +25,7 @@ rundocker:
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
 	-v $(DATADIR)/certs:/certs \
+	-v $(DATADIR)/data:/var/lib/registry \
 	-e REGISTRY_HTTP_ADDR=:$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
 	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):$(PORT) \
@@ -69,6 +70,7 @@ DATADIR:
 		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR ; \
 		echo "$$DATADIR">>DATADIR; cat DATADIR; \
 		mkdir -p $$DATADIR/certs ; chown -R 1000:1000 $$DATADIR/certs ; \
+		mkdir -p $$DATADIR/data ; chown -R 1000:1000 $$DATADIR/data ; \
 	done ;
 
 HOSTNAME:
