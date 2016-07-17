@@ -65,9 +65,8 @@ DATADIR:
 	@while [ -z "$$DATADIR" ]; do \
 		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR; echo "$$DATADIR">>DATADIR; cat DATADIR; \
 	done ;
-	$(eval DATADIR := $(shell cat DATADIR))
-	mkdir -p $(DATADIR)/certs
-	chown -R 1000:1000 $(DATADIR)/certs
+	mkdir -p $$DATADIR/certs
+	chown -R 1000:1000 $$DATADIR/certs
 
 HOSTNAME:
 	@while [ -z "$$HOSTNAME" ]; do \
