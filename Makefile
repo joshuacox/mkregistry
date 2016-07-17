@@ -63,8 +63,9 @@ LETSENCRYPT_EMAIL:
 
 DATADIR:
 	@while [ -z "$$DATADIR" ]; do \
-		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR; echo "$$DATADIR">>DATADIR; cat DATADIR; \
-		mkdir -p $$DATADIR/certs ; chown -R 1000:1000 $$DATADIR/certs \
+		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR ; \
+		echo "$$DATADIR">>DATADIR; cat DATADIR; \
+		mkdir -p $$DATADIR/certs ; chown -R 1000:1000 $$DATADIR/certs ; \
 	done ;
 
 HOSTNAME:
