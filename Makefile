@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME USERNAME PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rundocker
+run: HOSTNAME USERNAME PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
