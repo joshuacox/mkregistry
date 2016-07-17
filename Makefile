@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME PASSWORD DATADIR PORT LETSENCRYPT_EMAIL rundocker
+run: HOSTNAME USER PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -25,6 +25,7 @@ rundocker:
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
 	-v $(DATADIR)/certs:/certs \
+	-v $(DATADIR)/auth:/auth \
 	-v $(DATADIR)/data:/var/lib/registry \
 	-e REGISTRY_HTTP_ADDR=:$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
@@ -70,12 +71,18 @@ DATADIR:
 		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR ; \
 		echo "$$DATADIR">>DATADIR; cat DATADIR; \
 		mkdir -p $$DATADIR/certs ; chown -R 1000:1000 $$DATADIR/certs ; \
+		mkdir -p $$DATADIR/auth ; chown -R 1000:1000 $$DATADIR/auth ; \
 		mkdir -p $$DATADIR/data ; chown -R 1000:1000 $$DATADIR/data ; \
 	done ;
 
 HOSTNAME:
 	@while [ -z "$$HOSTNAME" ]; do \
 		read -r -p "Enter the hostname you wish to associate with this container [HOSTNAME]: " HOSTNAME; echo "$$HOSTNAME">>HOSTNAME; cat HOSTNAME; \
+	done ;
+
+USER:
+	@while [ -z "$$USER" ]; do \
+		read -r -p "Enter the user you wish to associate with this container [USER]: " USER; echo "$$USER">>USER; cat USER; \
 	done ;
 
 PASSWORD:
@@ -91,3 +98,10 @@ PORT:
 example:
 	$(eval PASSWORD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w42 | head -n1 ))
 	-@echo $(PASSWORD) > PASSWORD
+
+htpasswd: USER PASSWORD DATADIR
+	$(eval DATADIR := $(shell cat DATADIR))
+	$(eval USER := $(shell cat USER))
+	$(eval PASSWORD := $(shell cat PASSWORD))
+	docker run --entrypoint htpasswd registry:2 -Bbn $(USER) $(PASSWORD) > htpasswd
+	cp htpasswd $(DATADIR)/auth/htpasswd
