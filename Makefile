@@ -8,20 +8,26 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-# run a plain container
-run: certs LETSENCRYPT_EMAIL rundocker
+run: HOSTNAME PASSWORD DATADIR LETSENCRYPT_EMAIL rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval NAME := $(shell cat NAME))
+	$(eval HOSTNAME := $(shell cat HOSTNAME))
+	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
+	$(eval PASSWORD := $(shell cat PASSWORD))
 	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
 	$(eval PWD := $(shell pwd))
 	chmod 777 $(TMP)
 	@docker run --name=$(NAME) \
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
-	-v $(PWD)/certs:/certs \
+	-v $(DATADIR)/certs:/certs \
+	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):5000 \
+	-e REGISTRY_HTTP_NET=tcp \
+	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):5000 \
+	-e REGISTRY_HTTP_SECRET=$(PASSWORD) \
 	-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
 	-e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
@@ -50,11 +56,29 @@ logs:
 
 rmall: rm
 
-certs:
-	mkdir -p certs
-
 LETSENCRYPT_EMAIL:
 	@while [ -z "$$LETSENCRYPT_EMAIL" ]; do \
 		read -r -p "Enter the email you wish to associate with this domain [LETSENCRYPT_EMAIL]: " LETSENCRYPT_EMAIL; echo "$$LETSENCRYPT_EMAIL">>LETSENCRYPT_EMAIL; cat LETSENCRYPT_EMAIL; \
 	done ;
 
+DATADIR:
+	@while [ -z "$$DATADIR" ]; do \
+		read -r -p "Enter the datadir you wish to associate with this container [DATADIR]: " DATADIR; echo "$$DATADIR">>DATADIR; cat DATADIR; \
+	done ;
+	$(eval DATADIR := $(shell cat DATADIR))
+	mkdir -p $(DATADIR)/certs
+	chown -R 1000:1000 $(DATADIR)/certs
+
+HOSTNAME:
+	@while [ -z "$$HOSTNAME" ]; do \
+		read -r -p "Enter the hostname you wish to associate with this container [HOSTNAME]: " HOSTNAME; echo "$$HOSTNAME">>HOSTNAME; cat HOSTNAME; \
+	done ;
+
+PASSWORD:
+	@while [ -z "$$PASSWORD" ]; do \
+		read -r -p "Enter the password you wish to associate with this container [PASSWORD]: " PASSWORD; echo "$$PASSWORD">>PASSWORD; cat PASSWORD; \
+	done ;
+
+example:
+	$(eval PASSWORD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w42 | head -n1 ))
+	-@echo $(PASSWORD) > PASSWORD
