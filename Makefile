@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME PASSWORD DATADIR LETSENCRYPT_EMAIL rundocker
+run: HOSTNAME PASSWORD DATADIR PORT LETSENCRYPT_EMAIL rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -16,6 +16,7 @@ rundocker:
 	$(eval HOSTNAME := $(shell cat HOSTNAME))
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
+	$(eval PORT := $(shell cat PORT))
 	$(eval PASSWORD := $(shell cat PASSWORD))
 	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
 	$(eval PWD := $(shell pwd))
@@ -24,14 +25,14 @@ rundocker:
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
 	-v $(DATADIR)/certs:/certs \
-	-e REGISTRY_HTTP_ADDR=:5000 \
+	-e REGISTRY_HTTP_ADDR=:$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
-	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):5000 \
+	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):$(PORT) \
 	-e REGISTRY_HTTP_SECRET=$(PASSWORD) \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
-	-p 5000:5000 \
+	-p 5000:$(PORT) \
 	--restart=always \
 	-t $(TAG)
 
@@ -78,6 +79,11 @@ HOSTNAME:
 PASSWORD:
 	@while [ -z "$$PASSWORD" ]; do \
 		read -r -p "Enter the password you wish to associate with this container [PASSWORD]: " PASSWORD; echo "$$PASSWORD">>PASSWORD; cat PASSWORD; \
+	done ;
+
+PORT:
+	@while [ -z "$$PORT" ]; do \
+		read -r -p "Enter the external port you wish to associate with this container [PORT]: " PORT; echo "$$PORT">>PORT; cat PORT; \
 	done ;
 
 example:
