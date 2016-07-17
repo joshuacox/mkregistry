@@ -27,6 +27,9 @@ rundocker:
 	-v $(DATADIR)/certs:/certs \
 	-v $(DATADIR)/auth:/auth \
 	-v $(DATADIR)/data:/var/lib/registry \
+	-e "REGISTRY_AUTH=htpasswd" \
+	-e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+	-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
 	-e REGISTRY_HTTP_ADDR=:$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
 	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):$(PORT) \
