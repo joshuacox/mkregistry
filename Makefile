@@ -28,14 +28,16 @@ rundocker:
 	-e REGISTRY_HTTP_NET=tcp \
 	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):5000 \
 	-e REGISTRY_HTTP_SECRET=$(PASSWORD) \
-	-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
-	-e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
 	-p 5000:5000 \
 	--restart=always \
 	-t $(TAG)
+
+notUsed:
+	-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+	-e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
 
 kill:
 	-@docker kill `cat cid`
