@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME USER PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rundocker
+run: HOSTNAME USERNAME PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -83,9 +83,9 @@ HOSTNAME:
 		read -r -p "Enter the hostname you wish to associate with this container [HOSTNAME]: " HOSTNAME; echo "$$HOSTNAME">>HOSTNAME; cat HOSTNAME; \
 	done ;
 
-USER:
-	@while [ -z "$$USER" ]; do \
-		read -r -p "Enter the user you wish to associate with this container [USER]: " USER; echo "$$USER">>USER; cat USER; \
+USERNAME:
+	@while [ -z "$$USERNAME" ]; do \
+		read -r -p "Enter the user you wish to associate with this container [USERNAME]: " USERNAME; echo "$$USERNAME">>USERNAME; cat USERNAME; \
 	done ;
 
 PASSWORD:
@@ -102,9 +102,9 @@ example:
 	$(eval PASSWORD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w42 | head -n1 ))
 	-@echo $(PASSWORD) > PASSWORD
 
-htpasswd: USER PASSWORD DATADIR
+htpasswd: USERNAME PASSWORD DATADIR
 	$(eval DATADIR := $(shell cat DATADIR))
-	$(eval USER := $(shell cat USER))
+	$(eval USERNAME := $(shell cat USERNAME))
 	$(eval PASSWORD := $(shell cat PASSWORD))
-	docker run --entrypoint htpasswd registry:2 -Bbn $(USER) $(PASSWORD) > htpasswd
+	docker run --entrypoint htpasswd registry:2 -Bbn $(USERNAME) $(PASSWORD) > htpasswd
 	cp htpasswd $(DATADIR)/auth/htpasswd
