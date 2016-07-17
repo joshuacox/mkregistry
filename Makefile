@@ -32,7 +32,7 @@ rundocker:
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
-	-p 5000:$(PORT) \
+	-p $(PORT):5000 \
 	--restart=always \
 	-t $(TAG)
 
