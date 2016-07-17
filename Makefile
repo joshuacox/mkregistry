@@ -24,7 +24,7 @@ rundocker:
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
 	-v $(DATADIR)/certs:/certs \
-	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):5000 \
+	-e REGISTRY_HTTP_ADDR=:5000 \
 	-e REGISTRY_HTTP_NET=tcp \
 	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):5000 \
 	-e REGISTRY_HTTP_SECRET=$(PASSWORD) \
