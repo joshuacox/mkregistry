@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME USERNAME PASSWORD DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm rundocker
+run: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -18,6 +18,7 @@ rundocker:
 	$(eval TAG := $(shell cat TAG))
 	$(eval PORT := $(shell cat PORT))
 	$(eval PASSWORD := $(shell cat PASSWORD))
+	$(eval SECRET := $(shell cat SECRET))
 	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
 	$(eval PWD := $(shell pwd))
 	chmod 777 $(TMP)
@@ -33,7 +34,36 @@ rundocker:
 	-e REGISTRY_HTTP_ADDR=:$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
 	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME) \
-	-e REGISTRY_HTTP_SECRET=$(PASSWORD) \
+	-e REGISTRY_HTTP_SECRET=$(SECRET) \
+	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
+	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
+	-d \
+	-p $(PORT):$(PORT) \
+	--restart=always \
+	-t $(TAG)
+
+insecure: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm  insecuredocker
+
+insecuredocker:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
+	$(eval NAME := $(shell cat NAME))
+	$(eval HOSTNAME := $(shell cat HOSTNAME))
+	$(eval DATADIR := $(shell cat DATADIR))
+	$(eval TAG := $(shell cat TAG))
+	$(eval PORT := $(shell cat PORT))
+	$(eval SECRET := $(shell cat SECRET))
+	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
+	$(eval PWD := $(shell pwd))
+	chmod 777 $(TMP)
+	@docker run --name=$(NAME) \
+	--cidfile="cid" \
+	-v $(TMP):/tmp \
+	-v $(DATADIR)/certs:/certs \
+	-v $(DATADIR)/data:/var/lib/registry \
+	-e REGISTRY_HTTP_ADDR=:$(PORT) \
+	-e REGISTRY_HTTP_NET=tcp \
+	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME) \
+	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
@@ -101,6 +131,10 @@ PORT:
 example:
 	$(eval PASSWORD := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w42 | head -n1 ))
 	-@echo $(PASSWORD) > PASSWORD
+
+SECRET:
+	$(eval SECRET := $(shell tr -cd '[:alnum:]' < /dev/urandom | fold -w64 | head -n1 ))
+	-@echo $(SECRET) > SECRET
 
 htpasswd: USERNAME PASSWORD DATADIR
 	$(eval DATADIR := $(shell cat DATADIR))
