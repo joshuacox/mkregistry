@@ -17,6 +17,7 @@ rundocker:
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
 	$(eval PORT := $(shell cat PORT))
+	$(eval SSL_PORT := $(shell cat SSL_PORT))
 	$(eval PASSWORD := $(shell cat PASSWORD))
 	$(eval SECRET := $(shell cat SECRET))
 	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
@@ -31,18 +32,19 @@ rundocker:
 	-e "REGISTRY_AUTH=htpasswd" \
 	-e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
 	-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
-	-e REGISTRY_HTTP_ADDR=:$(PORT) \
+	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):$(SSL_PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
-	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME) \
+	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME):$(SSL_PORT) \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
-	-p $(PORT):$(PORT) \
+	-p $(PORT):5000 \
+	-p $(SSL_PORT):443 \
 	--restart=always \
 	-t $(TAG)
 
-insecure: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm  insecuredocker
+insecure: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT rm  insecuredocker
 
 insecuredocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -52,22 +54,18 @@ insecuredocker:
 	$(eval TAG := $(shell cat TAG))
 	$(eval PORT := $(shell cat PORT))
 	$(eval SECRET := $(shell cat SECRET))
-	$(eval LETSENCRYPT_EMAIL := $(shell cat LETSENCRYPT_EMAIL))
 	$(eval PWD := $(shell pwd))
 	chmod 777 $(TMP)
 	@docker run --name=$(NAME) \
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
-	-v $(DATADIR)/certs:/certs \
 	-v $(DATADIR)/data:/var/lib/registry \
-	-e REGISTRY_HTTP_ADDR=:$(PORT) \
+	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
-	-e REGISTRY_HTTP_HOST=https://$(HOSTNAME) \
+	-e REGISTRY_HTTP_HOST=http://$(HOSTNAME) \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
-	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
-	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
-	-p $(PORT):$(PORT) \
+	-p $(PORT):5000 \
 	--restart=always \
 	-t $(TAG)
 
@@ -126,6 +124,11 @@ PASSWORD:
 PORT:
 	@while [ -z "$$PORT" ]; do \
 		read -r -p "Enter the external port you wish to associate with this container [PORT]: " PORT; echo "$$PORT">>PORT; cat PORT; \
+	done ;
+
+SSL_PORT:
+	@while [ -z "$$SSL_PORT" ]; do \
+		read -r -p "Enter the external ssl port you wish to associate with this container [SSL_PORT]: " SSL_PORT; echo "$$SSL_PORT">>SSL_PORT; cat SSL_PORT; \
 	done ;
 
 example:

@@ -1,1 +1,1 @@
-registry:2.5.0-rc.2
+registry:2.5.0
