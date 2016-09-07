@@ -62,7 +62,7 @@ insecuredocker:
 	-v $(DATADIR)/data:/var/lib/registry \
 	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):$(PORT) \
 	-e REGISTRY_HTTP_NET=tcp \
-	-e REGISTRY_HTTP_HOST=http://$(HOSTNAME) \
+	-e REGISTRY_HTTP_HOST=http://$(HOSTNAME):$(PORT) \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-d \
 	-p $(PORT):5000 \
