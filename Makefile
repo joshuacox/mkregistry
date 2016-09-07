@@ -44,12 +44,11 @@ rundocker:
 	--restart=always \
 	-t $(TAG)
 
-insecure: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT rm  insecuredocker
+insecure:  SECRET DATADIR PORT rm  insecuredocker
 
 insecuredocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval NAME := $(shell cat NAME))
-	$(eval HOSTNAME := $(shell cat HOSTNAME))
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
 	$(eval PORT := $(shell cat PORT))
@@ -60,9 +59,6 @@ insecuredocker:
 	--cidfile="cid" \
 	-v $(TMP):/tmp \
 	-v $(DATADIR)/data:/var/lib/registry \
-	-e REGISTRY_HTTP_ADDR=$(HOSTNAME):$(PORT) \
-	-e REGISTRY_HTTP_NET=tcp \
-	-e REGISTRY_HTTP_HOST=http://$(HOSTNAME):$(PORT) \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-d \
 	-p $(PORT):5000 \
