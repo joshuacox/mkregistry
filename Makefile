@@ -48,6 +48,7 @@ rundocker:
 insecure:  SECRET DATADIR PORT rm  insecuredocker
 
 insecuredocker:
+	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval NAME := $(shell cat NAME))
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
