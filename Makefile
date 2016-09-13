@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT SSL_PORT LETSENCRYPT_EMAIL rm rundocker
+run: HOSTNAME IP USERNAME PASSWORD SECRET DATADIR htpasswd PORT SSL_PORT LETSENCRYPT_EMAIL rm rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -16,6 +16,7 @@ rundocker:
 	$(eval HOSTNAME := $(shell cat HOSTNAME))
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
+	$(eval IP := $(shell cat IP))
 	$(eval PORT := $(shell cat PORT))
 	$(eval SSL_PORT := $(shell cat SSL_PORT))
 	$(eval PASSWORD := $(shell cat PASSWORD))
@@ -39,8 +40,8 @@ rundocker:
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/certs/letsencrypt.cache \
 	-e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=$(LETSENCRYPT_EMAIL) \
 	-d \
-	-p $(PORT):5000 \
-	-p $(SSL_PORT):443 \
+	-p $(IP):$(PORT):5000 \
+	-p $(IP):$(SSL_PORT):443 \
 	--restart=always \
 	-t $(TAG)
 
@@ -59,7 +60,7 @@ insecuredocker:
 	-v $(DATADIR)/data:/var/lib/registry \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-d \
-	-p $(PORT):5000 \
+	-p $(IP):$(PORT):5000 \
 	--restart=always \
 	-t $(TAG)
 
@@ -139,3 +140,6 @@ htpasswd: USERNAME PASSWORD DATADIR
 	$(eval PASSWORD := $(shell cat PASSWORD))
 	docker run --entrypoint htpasswd registry:2 -Bbn $(USERNAME) $(PASSWORD) > htpasswd
 	cp htpasswd $(DATADIR)/auth/htpasswd
+
+IP:
+	curl icanhazip.com > IP
