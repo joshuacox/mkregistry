@@ -51,6 +51,7 @@ insecuredocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval NAME := $(shell cat NAME))
 	$(eval DATADIR := $(shell cat DATADIR))
+	$(eval IP := $(shell cat IP))
 	$(eval TAG := $(shell cat TAG))
 	$(eval PORT := $(shell cat PORT))
 	$(eval SECRET := $(shell cat SECRET))
