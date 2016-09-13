@@ -8,7 +8,7 @@ help:
 	@echo ""  This is merely a base image for usage read the README file
 	@echo ""   1. make run       - build and run docker container
 
-run: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT LETSENCRYPT_EMAIL rm rundocker
+run: HOSTNAME USERNAME PASSWORD SECRET DATADIR htpasswd PORT SSL_PORT LETSENCRYPT_EMAIL rm rundocker
 
 rundocker:
 	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
@@ -47,7 +47,6 @@ rundocker:
 insecure:  SECRET DATADIR PORT rm  insecuredocker
 
 insecuredocker:
-	$(eval TMP := $(shell mktemp -d --suffix=DOCKERTMP))
 	$(eval NAME := $(shell cat NAME))
 	$(eval DATADIR := $(shell cat DATADIR))
 	$(eval TAG := $(shell cat TAG))
@@ -57,7 +56,6 @@ insecuredocker:
 	chmod 777 $(TMP)
 	@docker run --name=$(NAME) \
 	--cidfile="cid" \
-	-v $(TMP):/tmp \
 	-v $(DATADIR)/data:/var/lib/registry \
 	-e REGISTRY_HTTP_SECRET=$(SECRET) \
 	-d \
